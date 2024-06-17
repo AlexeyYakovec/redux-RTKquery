@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { IUser, ServerResponse } from "../../models/models";
+import { IRepo, IUser, ServerResponse } from "../../models/models";
 
 export const githubApi = createApi({
    reducerPath: "github/api", // - адрес закешированных данных
    baseQuery: fetchBaseQuery({
       baseUrl: "https://api.github.com/", // базовый url
    }),
+   refetchOnFocus: true,
    endpoints: (build) => ({
       searchUsers: build.query<IUser[], string>({
          query: (search: string) => ({
@@ -13,14 +14,21 @@ export const githubApi = createApi({
             url: "search/users",
             params: {
                q: search,
-               per_page: 10, // лимит данных с сервера
+               per_page: 20, // лимит данных с сервера
             },
          }),
          transformResponse: (response: ServerResponse<IUser>) => {
             return response.items;
          }, // трансформация данных с сервера
       }),
+      getUserRepos: build.query<IRepo[], string>({
+         query: (username: string) => ({
+            url: `users/${username}/repos`,
+         }),
+      }),
    }),
 });
 
-export const { useSearchUsersQuery } = githubApi;
+export const { useSearchUsersQuery, useLazyGetUserReposQuery } = githubApi;
+// useLazyGetUserReposQuery; // вызываем когда заходим
+// useGetUserReposQuery; // вызывается сразу
